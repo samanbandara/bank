@@ -1,0 +1,91 @@
+.admin-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--card);
+  color: var(--text);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.admin-brand {
+  font-weight: 700;
+  margin-right: auto;
+}
+.admin-burger {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.admin-links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.admin-link {
+  color: var(--text);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.admin-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.admin-link.active {
+  background: rgba(59, 130, 246, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.45);
+}
+.admin-outlet {
+  padding: 16px;
+}
+.admin-logout {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.admin-logout:hover {
+  filter: brightness(1.05);
+}
+
+/* Mobile navbar */
+@media (max-width: 720px) {
+  .admin-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-links {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--card);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 10px 16px;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .admin-links.open {
+    display: flex;
+  }
+  .admin-link {
+    padding: 10px 12px;
+    font-size: 1rem;
+  }
+  .admin-logout {
+    width: 100%;
+    padding: 10px 12px;
+  }
+}

@@ -1,0 +1,45 @@
+import "./App.css";
+import { Route, Routes, Navigate } from "react-router-dom";
+import Admin from "./Components/admin/Admin";
+import User from "./Components/counter/counter";
+import Counters from "./Components/admin/pages/Counters";
+import Queue from "./Components/admin/pages/Queue";
+import Services from "./Components/admin/pages/Services";
+import Password from "./Components/admin/pages/Password";
+import Login from "./Components/login/login";
+import RequireAuth from "./Components/auth/RequireAuth";
+
+function App() {
+  return (
+    <div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth requireRole="admin">
+              <Admin />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<Counters />} />
+          <Route path="counters" element={<Counters />} />
+          <Route path="queue" element={<Queue />} />
+          <Route path="services" element={<Services />} />
+          <Route path="password" element={<Password />} />
+        </Route>
+        <Route
+          path="/user/:name"
+          element={
+            <RequireAuth>
+              <User />
+            </RequireAuth>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;

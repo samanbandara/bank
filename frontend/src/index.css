@@ -1,0 +1,43 @@
+/* Global theme based on login page background */
+:root {
+  --bg: #0f172a;
+  --card: #111827;
+  --muted: #94a3b8;
+  --text: #e5e7eb;
+  --primary: #3b82f6;
+  --primary-600: #2563eb;
+  --danger: #ef4444;
+  /* Fluid type: base font scales with viewport width */
+  --fs-base: clamp(14px, 1.2vw + 0.2rem, 18px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Set base font size responsive to device resolution */
+html {
+  font-size: var(--fs-base);
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: radial-gradient(
+      1200px 600px at 10% 10%,
+      #1f2937 0%,
+      rgba(31, 41, 55, 0) 60%
+    ),
+    radial-gradient(900px 600px at 90% 90%, #111827 0%, rgba(17, 24, 39, 0) 60%),
+    var(--bg);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial,
+    sans-serif;
+}
