@@ -8,6 +8,11 @@ import Services from "./Components/admin/pages/Services";
 import Password from "./Components/admin/pages/Password";
 import Login from "./Components/login/login";
 import RequireAuth from "./Components/auth/RequireAuth";
+import Customer from "./Components/customer/Customer";
+import CustomerServices from "./Components/customer/CustomerServices";
+import CustomerDate from "./Components/customer/CustomerDate";
+import CustomerConfirm from "./Components/customer/CustomerConfirm";
+import CustomerTokens from "./Components/customer/CustomerTokens";
 
 function App() {
   return (
@@ -28,6 +33,11 @@ function App() {
           <Route path="services" element={<Services />} />
           <Route path="password" element={<Password />} />
         </Route>
+        <Route path="/customer" element={<Customer />} />
+        <Route path="/customer/:id/services" element={<CustomerServices />} />
+        <Route path="/customer/:id/date" element={<CustomerDate />} />
+        <Route path="/customer/:id/confirm" element={<CustomerConfirm />} />
+  <Route path="/customer/:id/tokens" element={<CustomerTokens />} />
         <Route
           path="/user/:name"
           element={

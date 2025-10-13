@@ -1,10 +1,26 @@
-import React, { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "./AdminNavbar.css";
+import "./admin.css";
 
 const Admin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+  const sectionOrder = ["counters", "queue", "services", "password"];
+  const getSectionIndex = (pathname) => {
+    const m = pathname.match(/\/admin\/?([^/]*)/);
+    const seg = m && m[1] ? m[1] : ""; // empty when /admin
+    const name = seg || "counters";
+    const idx = sectionOrder.indexOf(name);
+    return idx === -1 ? 0 : idx;
+  };
+  const prevIndexRef = useRef(getSectionIndex(location.pathname));
+  const curIndex = getSectionIndex(location.pathname);
+  const dir = curIndex < prevIndexRef.current ? "from-left" : "from-right";
+  useEffect(() => {
+    prevIndexRef.current = curIndex;
+  }, [curIndex]);
   const handleLogout = () => {
     // Clear auth state
     try {
@@ -75,7 +91,9 @@ const Admin = () => {
         </div>
       </nav>
       <div className="admin-outlet">
-        <Outlet />
+        <div key={location.pathname} className={`md-slide-enter ${dir}`}>
+          <Outlet />
+        </div>
       </div>
     </div>
   );

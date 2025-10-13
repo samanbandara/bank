@@ -22,11 +22,21 @@
 .svc-input,
 .svc-select {
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(17, 24, 39, 0.6);
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    rgba(17, 24, 39, 0.45);
   color: #e5e7eb;
   outline: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: border-color 150ms ease, box-shadow 150ms ease,
+    transform 100ms ease, background-color 200ms ease;
 }
 .svc-input {
   flex: 1 1 380px;
@@ -37,9 +47,28 @@
 }
 /* Match select to input height in the add form */
 .svc-select {
-  padding: 14px 16px;
+  padding: 14px 44px 14px 16px; /* space for custom arrow */
   font-size: 1rem;
   min-height: 44px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 8l5 5 5-5' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 12px;
+}
+
+.svc-select:hover,
+.svc-input:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+.svc-select:active,
+.svc-input:active {
+  transform: translateY(0);
 }
 @media (max-width: 600px) {
   .svc-input {
@@ -54,6 +83,16 @@
 .svc-select:focus {
   border-color: rgba(59, 130, 246, 0.7);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  animation: svc-select-pop 120ms ease-out;
+}
+
+@keyframes svc-select-pop {
+  0% {
+    transform: scale(0.995);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .svc-button {
@@ -161,16 +200,28 @@
 }
 .svc-select.inline {
   min-width: 130px;
-  padding: 8px 10px;
+  padding: 8px 34px 8px 10px; /* space for arrow */
   min-height: unset;
   font-size: 0.9rem;
+  background-position: right 10px center;
+}
+
+/* Option panel (limited browser support, safe fallback) */
+.svc-select option {
+  background-color: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+}
+
+/* Hide legacy arrow in old IE */
+.svc-select::-ms-expand {
+  display: none;
 }
 
 .svc-badge {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 0.75rem; /* was 12px */
   font-weight: 700;
 }
 .svc-low {

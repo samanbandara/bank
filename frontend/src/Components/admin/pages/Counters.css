@@ -20,7 +20,7 @@
   background: rgba(148, 163, 184, 0.15);
   border: 1px solid rgba(148, 163, 184, 0.3);
   color: var(--text);
-  font-size: 13px;
+  font-size: 0.8125rem; /* was 13px */
 }
 .ctr-title-page {
   margin: 0 0 4px 0;
@@ -37,8 +37,8 @@
   border-radius: 10px;
   background: rgba(239, 68, 68, 0.18);
   border: 1px solid rgba(239, 68, 68, 0.4);
+  font-size: 0.95rem; /* align with Services alert */
 }
-
 .ctr-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -71,7 +71,7 @@
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 1rem; /* align with Services button */
 }
 .ctr-edit-btn:hover {
   filter: brightness(1.05);
@@ -88,6 +88,7 @@
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
+  font-size: 1rem; /* align with Services button */
 }
 .ctr-cancel-btn:hover {
   filter: brightness(1.05);
@@ -114,6 +115,17 @@
     background-position: 0 50%;
   }
 }
+
+@keyframes ctr-dropdown-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 .ctr-title {
   font-weight: 700;
   font-size: 1rem;
@@ -132,7 +144,7 @@
   justify-content: center;
   color: #0b1b3a;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 0.875rem; /* was 14px */
 }
 .ctr-headline {
   display: flex;
@@ -149,7 +161,7 @@
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.875rem; /* was 14px */
 }
 .ctr-del:hover {
   filter: brightness(1.05);
@@ -172,7 +184,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  font-size: 18px;
+  font-size: 1.125rem; /* was 18px */
 }
 .ctr-close:hover {
   filter: brightness(1.05);
@@ -200,7 +212,7 @@
 }
 .ctr-add-sub {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.8125rem; /* was 13px */
   margin-top: -2px;
 }
 .ctr-services-list {
@@ -216,7 +228,7 @@
   background: rgba(59, 130, 246, 0.15);
   border: 1px solid rgba(59, 130, 246, 0.35);
   color: #93c5fd;
-  font-size: 13px;
+  font-size: 0.8125rem; /* was 13px */
 }
 .ctr-select {
   margin-top: 8px;
@@ -227,9 +239,19 @@
   background: rgba(17, 24, 39, 0.6);
   color: var(--text);
   outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 120ms ease;
 }
 .ctr-select option {
   padding: 6px;
+}
+.ctr-select:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+.ctr-select:focus {
+  border-color: rgba(59, 130, 246, 0.7);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
 /* Multi-select dropdown */
@@ -249,9 +271,12 @@
   color: var(--text);
   cursor: pointer;
   font-size: 0.95rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 120ms ease;
 }
 .ctr-msd-toggle:hover {
-  filter: brightness(1.05);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
 }
 .ctr-msd-label {
   flex: 1;
@@ -260,6 +285,10 @@
 .ctr-msd-caret {
   margin-left: 10px;
   color: var(--muted);
+  transition: transform 160ms ease;
+}
+.ctr-msd.open .ctr-msd-caret {
+  transform: rotate(180deg);
 }
 .ctr-msd-menu {
   position: absolute;
@@ -273,6 +302,7 @@
   overflow: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   z-index: 20;
+  animation: ctr-dropdown-enter 160ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 .ctr-msd-item {
   display: flex;
@@ -297,7 +327,7 @@
   border-radius: 12px;
   padding: 10px 14px;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 1rem; /* align with Services button */
 }
 .ctr-add-btn:disabled {
   opacity: 0.7;
@@ -326,7 +356,7 @@
   .ctr-close {
     width: 34px;
     height: 34px;
-    font-size: 20px;
+    font-size: 1.25rem; /* was 20px */
   }
   .ctr-edit-btn,
   .ctr-add-btn {

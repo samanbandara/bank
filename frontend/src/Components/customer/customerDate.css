@@ -1,0 +1,141 @@
+.date-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0b1222 0%, #0e1a33 100%);
+  padding: 16px;
+  display: grid;
+  place-items: center;
+}
+
+.date-card {
+  width: 100%;
+  max-width: 540px;
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    #0f172a;
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.date-title {
+  margin: 0 0 6px 0;
+  font-size: clamp(1.1rem, 2vw + 0.4rem, 1.6rem);
+  font-weight: 800;
+}
+.date-subtitle {
+  margin: 0 0 12px 0;
+  color: #94a3b8;
+}
+
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.date-month {
+  font-weight: 700;
+}
+.date-nav-btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+.date-nav-btn:disabled {
+  color: #475569;
+  cursor: not-allowed;
+}
+
+.date-week {
+  margin-bottom: 6px;
+}
+.date-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  color: #94a3b8;
+  font-size: clamp(0.8rem, 0.9vw + 0.2rem, 0.95rem);
+}
+.date-week-cell {
+  text-align: center;
+}
+
+.date-grid-inner {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.date-cell {
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    #0f172a;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+.date-cell.selected {
+  border: 2px solid #3b82f6;
+  background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
+  color: #0f172a;
+}
+.date-cell.disabled {
+  color: #64748b;
+  cursor: not-allowed;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.date-footer {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  padding-top: 8px;
+  background: transparent;
+}
+.date-btn {
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.date-btn.secondary {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: transparent;
+  color: #e5e7eb;
+}
+.date-btn.primary {
+  border: none;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  font-weight: 700;
+}
+.date-btn.primary.disabled {
+  background: #475569;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .date-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .date-cell {
+    height: 42px;
+  }
+  .date-footer {
+    gap: 6px;
+  }
+}

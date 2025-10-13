@@ -1,0 +1,61 @@
+.admin-outlet {
+  position: relative;
+}
+
+.md-motion-enter {
+  animation: md-ease-in 240ms cubic-bezier(0.2, 0, 0, 1) both;
+  transform-origin: 20% 20%;
+}
+
+@keyframes md-ease-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+    filter: saturate(0.9) brightness(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: none;
+  }
+}
+
+/* Ensure dropdowns match search/input rounding in admin area if any */
+.admin-outlet select,
+.admin-outlet input[type="search"] {
+  border-radius: 12px;
+}
+
+/* Direction-aware slide for admin subpages */
+.md-slide-enter {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  animation-fill-mode: both;
+}
+.md-slide-enter.from-left {
+  animation-name: md-slide-from-left;
+}
+.md-slide-enter.from-right {
+  animation-name: md-slide-from-right;
+}
+
+@keyframes md-slide-from-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes md-slide-from-right {
+  0% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

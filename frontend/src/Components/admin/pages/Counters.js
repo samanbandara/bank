@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 // axios removed; using central API client
 import API from "../../../api";
 import "./Counters.css";
+import "./Services.css";
 
 const CounterCard = ({
   countername,
@@ -102,7 +103,7 @@ const MultiSelectDropdown = ({
   const label = selected.length === 0 ? placeholder : selected.join(", ");
 
   return (
-    <div className="ctr-msd" ref={ref}>
+    <div className={`ctr-msd ${open ? "open" : ""}`} ref={ref}>
       <button type="button" className="ctr-msd-toggle" onClick={toggle}>
         <span className="ctr-msd-label">{label}</span>
         <span className="ctr-msd-caret">▾</span>
@@ -269,15 +270,13 @@ const Counters = () => {
 
   return (
     <div className="ctr-page">
-      <div className="ctr-header">
-        <div className="ctr-header-left">
-          <h2 className="ctr-title-page">Counters</h2>
-          <div className="ctr-subtitle">View and add counter users</div>
-        </div>
-        <div className="ctr-header-right">
-          <span className="ctr-pill">Total: {counters.length}</span>
-        </div>
+      <div className="svc-header">
+        <h2 className="svc-title">Counters</h2>
+        <div className="svc-sub">View and add counter users</div>
       </div>
+      {/*<div className="svc-sub" style={{ marginBottom: 8 }}>
+        Total: {counters.length}
+      </div>*/}
       {error && <div className="ctr-alert">{error}</div>}
 
       <div className="ctr-grid">

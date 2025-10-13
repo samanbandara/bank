@@ -1,0 +1,363 @@
+/* Controls */
+.queue-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+/* Filters group wraps non-search controls */
+.queue-filters {
+  display: contents; /* default: behave like existing inline controls on desktop */
+}
+
+/* Toggle button shown only on small screens */
+.queue-filters-toggle {
+  display: none; /* shown via media query on phones */
+}
+
+.queue-input {
+  /* Match Services input sizing */
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(17, 24, 39, 0.6);
+  color: #e5e7eb;
+  min-width: 320px;
+  font-size: 1rem;
+  min-height: 44px;
+  flex: 1 1 380px;
+  outline: none;
+}
+
+.queue-input::placeholder {
+  color: #9ca3af;
+}
+
+.queue-input:focus {
+  border-color: rgba(59, 130, 246, 0.7);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.queue-select {
+  /* Match Services select sizing */
+  padding: 14px 44px 14px 16px; /* space for arrow */
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    rgba(17, 24, 39, 0.45);
+  color: #e5e7eb;
+  font-size: 1rem;
+  min-height: 44px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 8l5 5 5-5' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 12px;
+  transition: border-color 150ms ease, box-shadow 150ms ease,
+    transform 120ms ease, background-color 200ms ease;
+}
+
+.queue-edit-select {
+  padding: 8px 34px 8px 10px; /* space for arrow */
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.6);
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  /* Inline edit select font matches Services inline select */
+  font-size: 0.9rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 8l5 5 5-5' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 12px;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 120ms ease;
+}
+
+.queue-select:hover,
+.queue-edit-select:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+.queue-select:active,
+.queue-edit-select:active {
+  transform: translateY(0);
+}
+
+.queue-select:focus,
+.queue-edit-select:focus {
+  border-color: rgba(59, 130, 246, 0.7);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  outline: none;
+  animation: queue-select-pop 120ms ease-out;
+}
+
+@keyframes queue-select-pop {
+  0% {
+    transform: scale(0.995);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.queue-cal-wrap {
+  position: relative;
+}
+
+.queue-cal-popover {
+  position: absolute;
+  z-index: 30;
+  margin-top: 6px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Ensure buttons in the controls row (Pick date and Clear) are same size */
+.queue-controls .ctr-cancel-btn {
+  padding: 14px 16px;
+  min-height: 44px;
+  font-size: 1rem;
+}
+
+/* Cards */
+.queue-cards {
+  display: grid;
+  gap: 12px;
+}
+
+.queue-card {
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  color: #e5e7eb;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.queue-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queue-label {
+  font-size: 0.75rem; /* was 12px */
+  color: #94a3b8;
+}
+
+.queue-token {
+  font-weight: 700;
+  font-size: 1.125rem; /* was 18px */
+  background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
+  color: #0f172a;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.queue-counter-col {
+  min-width: 260px;
+}
+
+.inline-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.queue-chip {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  font-size: 0.75rem; /* align with Services badge */
+}
+
+.queue-services {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.queue-chip-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e5e7eb;
+  font-size: 0.75rem; /* was 12px */
+}
+
+.queue-empty {
+  padding: 12px;
+  color: #94a3b8;
+}
+
+/* Pagination */
+.queue-pagination {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.queue-pagination-info {
+  color: var(--muted);
+}
+
+/* Calendar */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.cal-title {
+  padding: 0 8px;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 34px);
+  gap: 4px;
+  justify-content: center;
+}
+
+.cal-weekday {
+  width: 34px;
+  height: 20px;
+  font-size: 0.75rem; /* was 12px */
+  text-align: center;
+  color: var(--muted);
+}
+
+.cal-spacer {
+  width: 34px;
+  height: 34px;
+}
+
+.cal-cell {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(17, 24, 39, 0.6);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.queue-saving {
+  font-size: 0.75rem; /* was 12px */
+  color: #94a3b8;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .queue-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  /* Show the Filters toggle next to search on phones */
+  .queue-filters-toggle {
+    display: inline-block;
+    width: 100%;
+    min-height: 40px;
+    padding: 10px 12px;
+  }
+
+  /* Collapse filters by default on phones */
+  .queue-filters {
+    display: none;
+  }
+  .queue-filters.open {
+    display: block;
+  }
+  .queue-cal-popover {
+    position: static;
+    width: 100%;
+  }
+  .queue-input,
+  .queue-select,
+  .queue-controls .ctr-cancel-btn {
+    width: 100%;
+    min-width: 0;
+    /* Make controls a bit shorter on phones */
+    min-height: 40px;
+    padding: 10px 12px;
+  }
+  /* Reduce search input further than others on phones */
+  .queue-input {
+    flex: 0 0 auto; /* prevent column flex from inflating height */
+    min-height: 34px;
+    height: 34px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    line-height: 1.2;
+  }
+  /* Remove iOS search decorations that add height */
+  .queue-input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .queue-input::-webkit-search-decoration,
+  .queue-input::-webkit-search-cancel-button,
+  .queue-input::-webkit-search-results-button,
+  .queue-input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .queue-cal-wrap {
+    width: 100%;
+  }
+  .queue-card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .queue-card-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .queue-counter-col {
+    width: 100%;
+    min-width: 0;
+  }
+  .inline-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .queue-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .queue-pagination .ctr-cancel-btn,
+  .queue-pagination .ctr-edit-btn {
+    width: 100%;
+  }
+}
