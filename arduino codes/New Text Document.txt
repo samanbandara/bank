@@ -1,0 +1,384 @@
+#include <HardwareSerial.h>
+#include <Arduino.h>
+#include <AudioFileSourceSD.h>
+#include <AudioGeneratorMP3.h>
+#include <AudioOutputI2S.h>
+#include <SPI.h>
+#include <SD.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include "ESP_I2S.h"
+
+// ------------------- SIM800 Setup -------------------
+HardwareSerial sim800(1);
+#define SIM800_RX 32
+#define SIM800_TX 33
+#define SIM800_BAUD 9600
+
+String dtmfInput = "";
+bool callActive = false;
+bool playTriggered = false;
+
+// ------------------- Sd card Setup -------------------
+#define SD_CS 5     // SD card chip select
+#define SD_MOSI 23  // SPI MOSI
+#define SD_MISO 19  // SPI MISO
+#define SD_SCK 18   // SPI SCK
+String resp = "";   // Store the at response
+
+// ------------------- MAX98357A Setup -------------------
+#define I2S_BCLK 26
+#define I2S_LRC 25
+#define I2S_DOUT 27
+I2SClass i2s;
+
+// ------------------- OLED Setup -------------------
+#define OLED_SDA 21
+#define OLED_SCL 22
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+#define OLED_RESET -1  // no reset pin
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+
+AudioGeneratorMP3 *mp3;
+AudioFileSourceSD *file;
+AudioOutputI2S *out;
+
+String mp3List[15];
+int totalFiles = 0;
+int currentFile = 0;
+
+String callFile = "ZOORY _ Yamu Sella Katharagama _ යමු සෙල්ල කතරගම EDM Cover.mp3";
+
+void loadMP3Files() {
+  File root = SD.open("/");
+  File entry;
+  totalFiles = 0;
+
+  while ((entry = root.openNextFile())) {
+    String name = String(entry.name());
+    name.toLowerCase();
+    if (name.endsWith(".mp3")) {
+      mp3List[totalFiles] = "/" + String(entry.name());
+      Serial.println("Found: " + mp3List[totalFiles]);
+      totalFiles++;
+    }
+    entry.close();
+  }
+  root.close();
+}
+
+void playFile(const String &name) {
+  delete file;
+  file = new AudioFileSourceSD(name.c_str());
+  mp3->begin(file, out);
+}
+
+// ------------------- Audio Task -------------------
+void audioTask(void *parameter) {
+  out = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S);
+  out->SetPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+  out->SetGain(0.7);
+
+  mp3 = new AudioGeneratorMP3();
+
+  // Initialize SPI for SD card
+  SPIClass SPI_SD(VSPI);
+  SPI_SD.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+  if (!SD.begin(SD_CS, SPI_SD)) {
+    Serial.println("SD card mount failed!");
+    while (1)
+      ;
+  }
+
+  loadMP3Files();
+  if (totalFiles == 0) {
+    Serial.println("No MP3 found!");
+    while (1)
+      ;
+  }
+
+  while (true) {
+    // Play specific file when triggered by call
+    if (playTriggered) {
+      Serial.println("Playing call audio...");
+      playFile(callFile);
+      playTriggered = false;
+    }
+
+    // Continue audio playback loop
+    if (mp3->isRunning()) {
+      if (!mp3->loop()) {
+        mp3->stop();
+      }
+    }
+
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+  }
+}
+
+// Function to read and clean SIM800 response
+String readClean(long timeout = 1000) {
+  String resp = "";
+  long start = millis();
+
+  while (millis() - start < timeout) {
+    while (sim800.available()) {
+      char c = sim800.read();  // read one character at a time
+      resp += c;
+    }
+  }
+
+  resp.trim();
+
+  // Remove line breaks
+  resp.replace("\r", "");
+  resp.replace("\n", "");
+
+  // Optional: remove trailing OK
+  /*if (resp.endsWith("OK")) {
+    resp = resp.substring(0, resp.length() - 2);
+    resp.trim();
+  }*/
+
+  return resp;
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(2000);
+  Serial.println("System Starting...");
+
+  // Start I2C on custom pins
+  Wire.begin(OLED_SDA, OLED_SCL);
+  delay(100);
+
+  // Initialize OLED
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("OLED not found!");
+    while (true)
+      ;
+  }
+
+  //rotate disply 90 (0 for nor, 1 for 90, 2 for 180, 3 for 270)
+  oled.setRotation(2);
+  //clean the display
+  oled.clearDisplay();
+  oled.fillRect(0, 0, 128, 64, SSD1306_BLACK);
+  delay(100);
+  //set font size(1 to 4, 1 small, 4 very large)
+  oled.setTextSize(2);
+  //set text color otherwise text may be invisible
+  oled.setTextColor(SSD1306_WHITE);
+  // set cursor x y
+  oled.setCursor(0, 0);
+  oled.println("BOOTING...");
+  oled.display();
+  delay(100);
+
+  oled.setTextSize(1);
+
+  //Initialize SD Card
+  while (true) {
+    out = new AudioOutputI2S(0, AudioOutputI2S::EXTERNAL_I2S);
+    out->SetPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+
+    SPIClass SPI_SD(VSPI);
+    SPI_SD.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+    oled.setCursor(0, 18);
+    if (SD.begin(SD_CS, SPI_SD)) {
+      oled.fillRect(0, 18, 128, 46, SSD1306_BLACK);
+      oled.println("SD card OK");
+      Serial.println("SD card OK");
+      oled.display();
+      break;
+    } else {
+      oled.println("SD card failed!");
+      Serial.println("SD card failed!");
+      oled.display();
+    }
+  }
+  delay(1000);
+
+  //Initialize MAX98357A
+  while (true) {
+    i2s.setPins(I2S_BCLK, I2S_LRC, I2S_DOUT);
+    if (!i2s.begin(I2S_MODE_STD, 44100, I2S_DATA_BIT_WIDTH_16BIT,
+                   I2S_SLOT_MODE_STEREO, I2S_STD_SLOT_BOTH)) {
+      oled.setCursor(0, 27);
+      oled.println("MAX98357A Failed!");
+      Serial.println("MAX98357A Failed!");
+      oled.display();
+    } else {
+      oled.fillRect(0, 27, 128, 37, SSD1306_BLACK);
+      oled.setCursor(0, 26);
+      oled.println("MAX98357A OK");
+      Serial.println("MAX98357A OK");
+      oled.display();
+      break;
+    }
+  }
+  //Waiting massage
+  oled.setCursor(0, 36);
+  Serial.println("Waiting for connectin");
+  oled.println("Waiting for connectin");
+  oled.display();
+
+  delay(2000);
+
+  //sim800l starting
+  sim800.begin(SIM800_BAUD, SERIAL_8N1, SIM800_RX, SIM800_TX);
+  delay(300);
+
+  //wait for connect to network
+  while (true) {
+    sim800.println("AT+CREG?");
+    resp = readClean();
+    int idx = resp.indexOf(":");
+    String voiceNetwork = "";
+    if (idx != -1) {
+      String tmp = resp.substring(idx + 1);
+      tmp.trim();
+      int commaPos = tmp.indexOf(',');
+      if (commaPos != -1) {
+        int stat = tmp.substring(commaPos + 1).toInt();
+        switch (stat) {
+          case 0: voiceNetwork = "Not registered"; break;
+          case 1: voiceNetwork = "Registered"; break;
+          case 2: voiceNetwork = "Searching"; break;
+          case 3: voiceNetwork = "Regist denied"; break;
+          case 4: voiceNetwork = "Unknown"; break;
+          case 5: voiceNetwork = "Roaming"; break;
+          default: voiceNetwork = "Unknown"; break;
+        }
+        oled.clearDisplay();
+        oled.setTextSize(2);
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setCursor(0, 0);
+        oled.println("BOOTING...");
+        oled.setTextSize(1);
+        oled.setCursor(0, 18);
+        oled.println("Voice " + voiceNetwork);
+        Serial.println("Voice " + voiceNetwork);
+        oled.display();
+        if (stat == 1 || stat == 5) break;
+      }
+    }
+    delay(200);
+  }
+
+  // ---------- Data Network Registration ----------
+  while (true) {
+    sim800.println("AT+CGREG?");
+    resp = readClean();
+    int idx = resp.indexOf(":");
+    String dataNetwork = "";
+    if (idx != -1) {
+      String tmp = resp.substring(idx + 1);
+      tmp.trim();
+      int commaPos = tmp.indexOf(',');
+      if (commaPos != -1) {
+        int stat = tmp.substring(commaPos + 1).toInt();
+        switch (stat) {
+          case 0: dataNetwork = "Not registered"; break;
+          case 1: dataNetwork = "Registered"; break;
+          case 2: dataNetwork = "Searching"; break;
+          case 3: dataNetwork = "Regist denied"; break;
+          case 4: dataNetwork = "Unknown"; break;
+          case 5: dataNetwork = "Roaming"; break;
+          default: dataNetwork = "Unknown"; break;
+        }
+        oled.fillRect(0, 27, 128, 64, SSD1306_BLACK);
+        oled.setCursor(0, 27);
+        oled.println("Data " + dataNetwork);
+        Serial.println("Data " + dataNetwork);
+        oled.display();
+        if (stat == 1 || stat == 5) break;
+      }
+    }
+  }
+
+  // Enable DTMF
+  sim800.println("AT+DDET=1");
+  String dtmfReply = readClean();
+  dtmfReply.trim();
+  oled.setCursor(0, 36);
+  oled.println("DTMF " + dtmfReply);
+  Serial.println("DTMF " + dtmfReply);
+  oled.display();
+  delay(200);
+
+  // Enable Caller ID
+  sim800.println("AT+CLIP=1");
+  String clipReply = readClean();
+  clipReply.trim();
+  oled.setCursor(0, 45);
+  oled.println("Caller ID " + clipReply);
+  Serial.println("Caller ID " + clipReply);
+  oled.display();
+  delay(2000);
+  oled.clearDisplay();
+  oled.display();
+  delay(100);
+}
+
+int bars = 0;
+
+/*void topofscreen() {
+  oled.setTextSize(1);
+  //to show tower icon
+  oled.fillRect(114, 0, 7, 1, SSD1306_WHITE);
+  oled.fillRect(115, 1, 5, 1, SSD1306_WHITE);
+  oled.fillRect(116, 2, 3, 1, SSD1306_WHITE);
+  oled.fillRect(117, 3, 1, 6, SSD1306_WHITE);
+  //to show dots
+  oled.fillRect(119, 8, 1, 1, SSD1306_WHITE);
+  oled.fillRect(121, 8, 1, 1, SSD1306_WHITE);
+  oled.fillRect(123, 8, 1, 1, SSD1306_WHITE);
+  oled.fillRect(125, 8, 1, 1, SSD1306_WHITE);
+  oled.fillRect(127, 8, 1, 1, SSD1306_WHITE);
+
+
+  oled.setTextColor(SSD1306_WHITE);
+  sim800.println("AT+CSQ");
+  delay(200);
+  String resp = readClean();
+  int rssi = 0;
+  int csqIndex = resp.indexOf("+CSQ:");
+  if (csqIndex != -1) {
+    int colon = resp.indexOf(':', csqIndex);
+    int comma = resp.indexOf(',', colon);
+    if (colon != -1 && comma != -1) {
+      int rssiVal = resp.substring(colon + 1, comma).toInt();
+      rssi = -113 + (rssiVal * 2);
+    }
+  }
+
+  if (rssi >= -65) bars = 5;
+  else if (rssi >= -75) bars = 4;
+  else if (rssi >= -85) bars = 3;
+  else if (rssi >= -95) bars = 2;
+  else if (rssi >= -105) bars = 1;
+  else bars = 0;
+
+  if (bars >= 1) oled.fillRect(119, 9, 2, 1, SSD1306_WHITE);  // bar1
+
+  if (bars >= 2) oled.fillRect(121, 7, 2, 3, SSD1306_WHITE);  // bar2
+
+  if (bars >= 3) oled.fillRect(123, 5, 2, 5, SSD1306_WHITE);  // bar3
+
+  if (bars >= 4) oled.fillRect(125, 3, 2, 7, SSD1306_WHITE);  // bar4
+
+  if (bars >= 5) oled.fillRect(127, 1, 1, 9, SSD1306_WHITE);  // bar5
+
+  oled.setCursor(0, 0);
+  oled.println(rssi);
+  Serial.println(rssi);
+  oled.display();
+}*/
+void loop() {
+  //topofscreen();
+}

@@ -64,8 +64,21 @@ const CustomerServices = () => {
   const canContinue = useMemo(() => selectedIds.length > 0, [selectedIds]);
 
   const proceed = () => {
-    // Navigate to date selection, carry selected service ids in state
-    navigate(`/customer/${id}/date`, { state: { services: selectedIds } });
+    const selectedServices = services.filter((s) => selectedIds.includes(s.serviceid));
+
+    if (selectedIds.length === 2) {
+      navigate(`/customer/${id}/order`, {
+        state: {
+          services: selectedIds,
+          selectedServices,
+        },
+      });
+      return;
+    }
+
+    navigate(`/customer/${id}/date`, {
+      state: { services: selectedIds, selectedServices },
+    });
   };
 
   return (
@@ -167,6 +180,18 @@ const CustomerServices = () => {
                     }}
                   >
                     {s.servicename}
+                    {s.average_minutes !== undefined && (
+                      <div
+                        style={{
+                          fontWeight: 500,
+                          fontSize: "0.85rem",
+                          opacity: 0.8,
+                          marginTop: 6,
+                        }}
+                      >
+                        ~{s.average_minutes} min
+                      </div>
+                    )}
                   </div>
                 </button>
               );

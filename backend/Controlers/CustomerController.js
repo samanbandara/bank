@@ -1,26 +1,25 @@
 const Counter = require("../Model/CounterModel");
 const Customer = require("../Model/CustomerModel");
+const OldCustomer = require("../Model/OldCustomerModel");
 const Service = require("../Model/ServiceModel");
+const Button = require("../Model/ButtonModel");
+const BankSchedule = require("../Model/BankScheduleModel");
 
-function pickCounter(counters, requestedServices) {
-  // Simple heuristic:
-  // 1) Counters that cover ALL requested services
-  // 2) Otherwise counters that cover at least one
-  // 3) Tie-breaker: fewest existing tickets today (load), then lexicographical by counterid
+// Determine candidate counters based on requested services.
+function filterCountersByServices(counters, requestedServices) {
   const coversAll = [];
   const coversSome = [];
+  const reqLower = requestedServices.map((s) => s.toLowerCase());
   for (const c of counters) {
     const svc = Array.isArray(c.counterservices)
       ? c.counterservices.map((x) => String(x).toLowerCase())
       : [];
-    const req = requestedServices.map((x) => String(x).toLowerCase());
-    const hasAll = req.every((r) => svc.includes(r));
-    const hasSome = req.some((r) => svc.includes(r));
+    const hasAll = reqLower.every((r) => svc.includes(r));
+    const hasSome = reqLower.some((r) => svc.includes(r));
     if (hasAll) coversAll.push(c);
     else if (hasSome) coversSome.push(c);
   }
-  const pool = coversAll.length ? coversAll : coversSome;
-  return pool;
+  return coversAll.length ? coversAll : coversSome;
 }
 
 async function getTodayLoadMap(dateStr) {
@@ -44,9 +43,32 @@ async function generateToken(dateStr) {
   return `T-${day}-${next}`;
 }
 
+async function getScheduleForDate(dateStr) {
+  const defaultDay = { open: true, openTime: "09:00", closeTime: "17:00" };
+  try {
+    const doc = await BankSchedule.findOne({}).sort({ updatedAt: -1 }).lean();
+    if (!doc || !Array.isArray(doc.days)) return { ...defaultDay };
+    const dayIdx = (new Date(dateStr).getDay() + 6) % 7; // Monday=0 ... Sunday=6
+    const match = doc.days.find((d) => Number(d.dayIndex) === dayIdx);
+    if (!match) return { ...defaultDay };
+    return {
+      open: match.open !== undefined ? Boolean(match.open) : true,
+      openTime: match.openTime || defaultDay.openTime,
+      closeTime: match.closeTime || defaultDay.closeTime,
+    };
+  } catch (err) {
+    return { ...defaultDay }; // fail open with defaults
+  }
+}
+
+function addMinutes(base, mins) {
+  return new Date(base.getTime() + mins * 60000);
+}
+
 exports.create = async (req, res) => {
   try {
     const { userid, date, services } = req.body || {};
+    const access_type = (req.body && req.body.access_type) ? String(req.body.access_type) : "web";
     if (!userid || !date || !Array.isArray(services) || services.length === 0) {
       return res.status(400).json({
         message: "userid, date and services (non-empty array) are required",
@@ -56,7 +78,7 @@ exports.create = async (req, res) => {
     // Load services catalog to build normalization maps
     const svcCatalog = await Service.find(
       {},
-      { _id: 1, serviceid: 1, servicename: 1 }
+      { _id: 1, serviceid: 1, servicename: 1, average_minutes: 1 }
     ).lean();
     const idToSid = new Map();
     const nameToSid = new Map();
@@ -105,6 +127,11 @@ exports.create = async (req, res) => {
       });
     }
 
+    const schedule = await getScheduleForDate(date);
+    if (!schedule.open) {
+      return res.status(400).json({ message: "Bank is closed on the selected day" });
+    }
+
     const counters = await Counter.find({}).lean();
     if (!counters || counters.length === 0) {
       return res.status(400).json({ message: "No counters available" });
@@ -116,21 +143,102 @@ exports.create = async (req, res) => {
       counterservices: normalizeList(c.counterservices || []),
     }));
 
-    const candidates = pickCounter(countersNormalized, reqServiceIds);
+    let candidates = filterCountersByServices(countersNormalized, reqServiceIds);
     if (!candidates.length) {
       return res
         .status(400)
         .json({ message: "No counter supports the requested services" });
     }
 
+    // If user provided an ordered list (first service priority), prefer counters that serve the first service
+    const firstService = reqServiceIds[0];
+    if (firstService) {
+      const firstCandidates = candidates.filter((c) =>
+        Array.isArray(c.counterservices) && c.counterservices.includes(firstService)
+      );
+      if (firstCandidates.length) {
+        candidates = firstCandidates;
+      }
+    }
+
+    // Prefer counters whose assigned button device is online (if any exist)
+    try {
+      const buttonDocs = await Button.find(
+        { assignedCounterId: { $in: candidates.map((c) => c.counterid) } },
+        { assignedCounterId: 1, online: 1, status: 1 }
+      ).lean();
+      const onlineSet = new Set(
+        buttonDocs
+          .filter((b) => b.online === true || b.status === "online")
+          .map((b) => b.assignedCounterId)
+      );
+      const onlineCandidates = candidates.filter((c) =>
+        onlineSet.has(c.counterid)
+      );
+      if (onlineCandidates.length) {
+        candidates = onlineCandidates; // only keep online ones if any
+      }
+    } catch (e) {
+      // Ignore button filtering errors – proceed without it
+    }
+
     const loadMap = await getTodayLoadMap(date);
     candidates.sort((a, b) => {
       const la = loadMap.get(a.counterid) || 0;
       const lb = loadMap.get(b.counterid) || 0;
-      if (la !== lb) return la - lb;
-      return String(a.counterid).localeCompare(String(b.counterid));
+      if (la !== lb) return la - lb; // fewer tickets first
+      const ta = a.lastAssignedAt ? new Date(a.lastAssignedAt).getTime() : 0;
+      const tb = b.lastAssignedAt ? new Date(b.lastAssignedAt).getTime() : 0;
+      if (ta !== tb) return ta - tb; // least recently assigned first
+      return String(a.counterid).localeCompare(String(b.counterid)); // stable tie-break
     });
     const assigned = candidates[0];
+
+    // Update fairness marker
+    try {
+      await Counter.updateOne(
+        { _id: assigned._id },
+        { $set: { lastAssignedAt: new Date() } }
+      );
+    } catch (_) {}
+
+    // ETA calculation: if no customers, opening time; else add queue length * avg minutes
+    const loadForCounter = loadMap.get(assigned.counterid) || 0;
+
+    // derive average minutes from requested services
+    const avgMinutes = (() => {
+      const serviceMap = new Map();
+      for (const s of svcCatalog) {
+        serviceMap.set(String(s.serviceid).toLowerCase(), Number(s.average_minutes) || 0);
+      }
+      const vals = reqServiceIds
+        .map((sid) => serviceMap.get(String(sid).toLowerCase()) || 0)
+        .filter((v) => Number.isFinite(v) && v > 0);
+      if (!vals.length) return 5; // fallback
+      const sum = vals.reduce((a, b) => a + b, 0);
+      return sum / vals.length;
+    })();
+
+    const queueMinutes = loadForCounter * avgMinutes;
+
+    // establish base time: date's opening time (on selected day), but not earlier than now if same day
+    const opening = new Date(`${date}T${schedule.openTime || "09:00"}:00`);
+    const now = new Date();
+    let base = opening;
+    const isSameDay = opening.toISOString().slice(0, 10) === now.toISOString().slice(0, 10);
+    if (isSameDay && now > opening) {
+      base = now; // already past opening today
+    }
+
+    let etaDate = base;
+    if (loadForCounter === 0) {
+      etaDate = base; // first customer: base respects current time if today
+    } else {
+      etaDate = addMinutes(base, queueMinutes);
+    }
+
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const etaTime = `${pad2(etaDate.getHours())}:${pad2(etaDate.getMinutes())}`;
 
     const token = await generateToken(date);
     const created = await Customer.create({
@@ -139,10 +247,13 @@ exports.create = async (req, res) => {
       services: reqServiceIds,
       counterid: assigned.counterid,
       token,
+      access_type,
+      arrival_time: etaTime,
     });
+
     return res
       .status(201)
-      .json({ ok: true, token, counter: assigned, customer: created });
+      .json({ ok: true, token, counter: assigned, customer: created, eta_time: etaTime });
   } catch (err) {
     console.error("customer.create error:", err);
     return res.status(500).json({ message: "Internal server error" });
@@ -228,6 +339,8 @@ exports.list = async (req, res) => {
         (sid) => serviceMap.get(String(sid).toLowerCase()) || sid
       ),
       createdAt: c.createdAt,
+      arrival_time: c.arrival_time,
+      access_type: c.access_type,
     }));
 
     return res.json({
@@ -318,6 +431,36 @@ exports.updateCounter = async (req, res) => {
     });
   } catch (err) {
     console.error("customer.updateCounter error:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// POST /customers/archive?before=YYYY-MM-DD
+// Moves all customers with date < before into the oldcustomers collection, then deletes them from active customers.
+exports.archiveOld = async (req, res) => {
+  try {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const before = String(req.query.before || todayStr).trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(before)) {
+      return res.status(400).json({ message: "Invalid 'before' date format; expected YYYY-MM-DD" });
+    }
+
+    const criteria = { date: { $lt: before } };
+    const docs = await Customer.find(criteria).lean();
+    if (!docs.length) {
+      return res.json({ ok: true, moved: 0 });
+    }
+
+    // Insert into archive collection
+    await OldCustomer.insertMany(docs, { ordered: false });
+
+    // Remove from active collection
+    const ids = docs.map((d) => d._id);
+    await Customer.deleteMany({ _id: { $in: ids } });
+
+    return res.json({ ok: true, moved: docs.length, before });
+  } catch (err) {
+    console.error("customer.archiveOld error:", err);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

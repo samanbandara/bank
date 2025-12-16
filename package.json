@@ -1,0 +1,20 @@
+{
+  "name": "bank_queue_management",
+  "version": "1.0.0",
+  "description": "bank queue management",
+  "homepage": "https://github.com/samanbandara/bank#readme",
+  "bugs": {
+    "url": "https://github.com/samanbandara/bank/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samanbandara/bank.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

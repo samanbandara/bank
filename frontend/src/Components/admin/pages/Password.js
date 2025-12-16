@@ -64,8 +64,8 @@ const Password = () => {
         <table className="pwd-table">
           <thead>
             <tr>
-              <th>Username</th>
               <th>Role</th>
+              <th>Username</th>
               <th>Password</th>
               <th>Actions</th>
             </tr>
@@ -78,8 +78,8 @@ const Password = () => {
             ) : (
               users.map((u) => (
                 <tr key={u._id}>
-                  <td>{u.username}</td>
                   <td>{u.role}</td>
+                  <td>{u.username}</td>
                   <td>
                     {editingId === u._id ? (
                       <input

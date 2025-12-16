@@ -7,7 +7,15 @@ const Admin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const sectionOrder = ["counters", "queue", "services", "password"];
+  const [localAuth, setLocalAuth] = useState(() => {
+    try {
+      const raw = localStorage.getItem("authUser");
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      return null;
+    }
+  });
+  const sectionOrder = ["counters", "queue", "services", "bank-opening", "buttons", "autocall", "password"];
   const getSectionIndex = (pathname) => {
     const m = pathname.match(/\/admin\/?([^/]*)/);
     const seg = m && m[1] ? m[1] : ""; // empty when /admin
@@ -31,7 +39,25 @@ const Admin = () => {
   return (
     <div style={{ fontFamily: "Arial, sans-serif", minHeight: "100vh" }}>
       <nav className="admin-nav">
-        <div className="admin-brand">Admin</div>
+        <button
+          type="button"
+          className="admin-brand"
+          title="Click to swap stored username and role"
+          onClick={() => {
+            if (!localAuth) return;
+            const swapped = {
+              username: String(localAuth.role || ""),
+              role: String(localAuth.username || ""),
+            };
+            try {
+              localStorage.setItem("authUser", JSON.stringify(swapped));
+            } catch (_) {}
+            setLocalAuth(swapped);
+          }}
+          style={{ cursor: localAuth ? "pointer" : "default", background: "transparent", border: "none", padding: 0 }}
+        >
+          Admin
+        </button>
         <button
           className="admin-burger"
           aria-label="Toggle menu"
@@ -69,6 +95,33 @@ const Admin = () => {
             onClick={() => setOpen(false)}
           >
             Services
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `admin-link${isActive ? " active" : ""}`
+            }
+            to="bank-opening"
+            onClick={() => setOpen(false)}
+          >
+            Bank Opening
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `admin-link${isActive ? " active" : ""}`
+            }
+            to="buttons"
+            onClick={() => setOpen(false)}
+          >
+            Buttons
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `admin-link${isActive ? " active" : ""}`
+            }
+            to="autocall"
+            onClick={() => setOpen(false)}
+          >
+            Auto Call
           </NavLink>
           <NavLink
             className={({ isActive }) =>

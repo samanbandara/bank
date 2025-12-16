@@ -7,23 +7,41 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) {
-      return res.status(400).json({ ok: false, message: 'Username and password are required' });
+      return res
+        .status(400)
+        .json({ ok: false, message: 'Username and password are required' });
     }
 
-    const user = await Administrator.findOne({ username }).lean();
+    // Be tolerant of username casing and surrounding spaces
+    const rawName = String(username).trim();
+    // Case-insensitive exact match for username
+    const regex = new RegExp(`^${rawName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+    const user = await Administrator.findOne({ username: regex }).lean();
     if (!user) {
-      return res.status(401).json({ ok: false, message: 'Invalid credentials' });
+      return res
+        .status(401)
+        .json({ ok: false, message: 'Invalid credentials' });
     }
 
     // NOTE: For simplicity, compare plaintext. In production, use bcrypt.
-    if (user.password !== password) {
-      return res.status(401).json({ ok: false, message: 'Invalid credentials' });
+    if (String(user.password) !== String(password)) {
+      return res
+        .status(401)
+        .json({ ok: false, message: 'Invalid credentials' });
     }
 
-    return res.json({ ok: true, role: user.role || (user.username.toLowerCase()==='admin'?'admin':'counter'), username: user.username });
+    return res.json({
+      ok: true,
+      role:
+        user.role ||
+        (String(user.username).toLowerCase() === 'admin' ? 'admin' : 'counter'),
+      username: user.username,
+    });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ ok: false, message: 'Internal server error' });
+    return res
+      .status(500)
+      .json({ ok: false, message: 'Internal server error' });
   }
 };
 

@@ -23,9 +23,9 @@ exports.getAll = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { servicename, servicepiority } = req.body || {};
-    if (!servicename || !servicepiority) {
-      return res.status(400).json({ message: 'servicename and servicepiority are required' });
+    const { servicename, servicepiority, average_minutes } = req.body || {};
+    if (!servicename || !servicepiority || average_minutes === undefined) {
+      return res.status(400).json({ message: 'servicename, servicepiority and average_minutes are required' });
     }
     // Normalize priority
     const priority = String(servicepiority).toLowerCase();
@@ -33,8 +33,13 @@ exports.create = async (req, res) => {
       return res.status(400).json({ message: 'servicepiority must be low, medium or high' });
     }
 
+    const avg = Number(average_minutes);
+    if (!Number.isFinite(avg) || avg < 0) {
+      return res.status(400).json({ message: 'average_minutes must be a non-negative number' });
+    }
+
     const serviceid = await generateNextId();
-    const created = await Service.create({ serviceid, servicename, servicepiority: priority });
+    const created = await Service.create({ serviceid, servicename, servicepiority: priority, average_minutes: avg });
     return res.status(201).json({ message: 'Created', service: created });
   } catch (err) {
     console.error('create service error:', err);
@@ -45,8 +50,8 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { servicename, servicepiority } = req.body || {};
-    if (!servicename && !servicepiority) {
+    const { servicename, servicepiority, average_minutes } = req.body || {};
+    if (!servicename && !servicepiority && average_minutes === undefined) {
       return res.status(400).json({ message: 'Nothing to update' });
     }
     const updates = {};
@@ -57,6 +62,13 @@ exports.update = async (req, res) => {
         return res.status(400).json({ message: 'servicepiority must be low, medium or high' });
       }
       updates.servicepiority = p;
+    }
+    if (average_minutes !== undefined) {
+      const avg = Number(average_minutes);
+      if (!Number.isFinite(avg) || avg < 0) {
+        return res.status(400).json({ message: 'average_minutes must be a non-negative number' });
+      }
+      updates.average_minutes = avg;
     }
     const updated = await Service.findByIdAndUpdate(id, updates, { new: true });
     if (!updated) return res.status(404).json({ message: 'Service not found' });

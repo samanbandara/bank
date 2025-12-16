@@ -1,0 +1,118 @@
+.btn-page {
+  display: block;
+}
+
+.btn-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.btn-refresh {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.btn-refresh:hover {
+  filter: brightness(1.05);
+}
+
+.btn-alert {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.btn-card {
+  background: var(--card);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-headline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(59, 130, 246, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.45);
+}
+
+.btn-title {
+  font-weight: 700;
+}
+
+.btn-status {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+.btn-status.on { color: #86efac; }
+.btn-status.off { color: #fca5a5; }
+
+.btn-field label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  opacity: 0.9;
+}
+
+.btn-field select {
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+}
+
+.btn-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-toggle {
+  background: rgba(59, 130, 246, 0.22);
+  color: var(--text);
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.btn-toggle:hover { filter: brightness(1.05); }
+
+.btn-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  opacity: 0.8;
+  padding: 24px 0;
+}
+
+/* skeleton */
+.btn-skel { height: 130px; opacity: 0.55; animation: sk 1.2s linear infinite; }
+@keyframes sk { 0%{filter: brightness(0.9)} 50%{filter: brightness(1)} 100%{filter: brightness(0.9)} }

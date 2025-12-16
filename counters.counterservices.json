@@ -1,0 +1,150 @@
+[{
+  "_id": {
+    "$oid": "69386136068d5aa270031d73"
+  },
+  "serviceid": "sv01",
+  "servicename": "Cash deposit & Cash withdrawal",
+  "servicepiority": "medium",
+  "createdAt": {
+    "$date": "2025-12-09T17:49:42.067Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:49:42.067Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693861aa068d5aa270031d77"
+  },
+  "serviceid": "sv02",
+  "servicename": "Loan inquiry and processing",
+  "servicepiority": "high",
+  "createdAt": {
+    "$date": "2025-12-09T17:51:38.593Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:51:38.593Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6938620c068d5aa270031d7b"
+  },
+  "serviceid": "sv03",
+  "servicename": "Business & Serving account services",
+  "servicepiority": "high",
+  "createdAt": {
+    "$date": "2025-12-09T17:53:16.283Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:53:24.888Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69386240068d5aa270031d81"
+  },
+  "serviceid": "sv04",
+  "servicename": "Document verification and collection",
+  "servicepiority": "medium",
+  "createdAt": {
+    "$date": "2025-12-09T17:54:08.772Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:54:08.772Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69386266068d5aa270031d85"
+  },
+  "serviceid": "sv05",
+  "servicename": "Fixed deposits",
+  "servicepiority": "low",
+  "createdAt": {
+    "$date": "2025-12-09T17:54:46.236Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:54:46.236Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69386288068d5aa270031d89"
+  },
+  "serviceid": "sv06",
+  "servicename": "Pawning services",
+  "servicepiority": "medium",
+  "createdAt": {
+    "$date": "2025-12-09T17:55:20.102Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:55:20.102Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693862a7068d5aa270031d8d"
+  },
+  "serviceid": "sv07",
+  "servicename": "Customer support",
+  "servicepiority": "low",
+  "createdAt": {
+    "$date": "2025-12-09T17:55:51.624Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:56:04.264Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693862be068d5aa270031d93"
+  },
+  "serviceid": "sv08",
+  "servicename": "Meet manager",
+  "servicepiority": "medium",
+  "createdAt": {
+    "$date": "2025-12-09T17:56:14.251Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T17:56:14.251Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69387095578275552536ca4a"
+  },
+  "serviceid": "sv09",
+  "servicename": "Test",
+  "servicepiority": "low",
+  "createdAt": {
+    "$date": "2025-12-09T18:55:17.841Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T18:55:17.841Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6938873ec918a2a197f748c1"
+  },
+  "serviceid": "sv10",
+  "servicename": "test service",
+  "servicepiority": "medium",
+  "createdAt": {
+    "$date": "2025-12-09T20:31:58.127Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-09T20:31:58.127Z"
+  },
+  "__v": 0
+}]

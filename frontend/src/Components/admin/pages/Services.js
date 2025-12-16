@@ -10,6 +10,7 @@ const Services = () => {
   const [form, setForm] = useState({
     servicename: "",
     servicepiority: "medium",
+    average_minutes: "",
   });
   const [loading, setLoading] = useState(false);
   const [loadingList, setLoadingList] = useState(false);
@@ -19,6 +20,7 @@ const Services = () => {
   const [editForm, setEditForm] = useState({
     servicename: "",
     servicepiority: "medium",
+    average_minutes: "",
   });
 
   const fetchServices = async () => {
@@ -46,13 +48,23 @@ const Services = () => {
       setError("Service name is required");
       return;
     }
+    if (form.average_minutes === "") {
+      setError("Average time (minutes) is required");
+      return;
+    }
+    const avg = Number(form.average_minutes);
+    if (!Number.isFinite(avg) || avg < 0) {
+      setError("Average time must be a non-negative number");
+      return;
+    }
     try {
       setLoading(true);
       await API.post("/services", {
         servicename: form.servicename.trim(),
         servicepiority: form.servicepiority,
+        average_minutes: avg,
       });
-      setForm({ servicename: "", servicepiority: "medium" });
+      setForm({ servicename: "", servicepiority: "medium", average_minutes: "" });
       setMessage("Service added successfully");
       fetchServices();
       setTimeout(() => setMessage(""), 2000);
@@ -69,12 +81,13 @@ const Services = () => {
     setEditForm({
       servicename: svc.servicename,
       servicepiority: svc.servicepiority,
+      average_minutes: svc.average_minutes ?? "",
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditForm({ servicename: "", servicepiority: "medium" });
+    setEditForm({ servicename: "", servicepiority: "medium", average_minutes: "" });
   };
 
   const saveEdit = async (id) => {
@@ -83,6 +96,7 @@ const Services = () => {
       await API.put(`/services/${id}`, {
         servicename: editForm.servicename,
         servicepiority: editForm.servicepiority,
+        average_minutes: editForm.average_minutes,
       });
       setMessage("Service updated");
       setTimeout(() => setMessage(""), 1500);
@@ -122,6 +136,15 @@ const Services = () => {
           value={form.servicename}
           onChange={(e) => setForm({ ...form, servicename: e.target.value })}
         />
+        <input
+          className="svc-input"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="Average time (minutes)"
+          value={form.average_minutes}
+          onChange={(e) => setForm({ ...form, average_minutes: e.target.value })}
+        />
         <select
           className="svc-select"
           value={form.servicepiority}
@@ -140,25 +163,26 @@ const Services = () => {
       {message && <div className="svc-alert success">{message}</div>}
 
       <div className="svc-table-wrap">
-        <table className="svc-table">
+        <table className="svc-table svc-table--balanced">
           <thead>
             <tr>
-              <th>Service ID</th>
-              <th>Name</th>
-              <th>Priority</th>
-              <th>Actions</th>
+              <th style={{ width: "14%" }}>Service ID</th>
+              <th style={{ width: "32%" }}>Name</th>
+              <th style={{ width: "18%" }}>Priority</th>
+              <th style={{ width: "18%" }}>Avg (min)</th>
+              <th style={{ width: "18%" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loadingList ? (
               <tr>
-                <td colSpan={4} className="svc-empty">
+                <td colSpan={5} className="svc-empty">
                   Loading services...
                 </td>
               </tr>
             ) : services.length === 0 ? (
               <tr>
-                <td colSpan={4} className="svc-empty">
+                <td colSpan={5} className="svc-empty">
                   No services yet.
                 </td>
               </tr>
@@ -200,6 +224,25 @@ const Services = () => {
                       </select>
                     ) : (
                       toTitle(s.servicepiority)
+                    )}
+                  </td>
+                  <td>
+                    {editingId === s._id ? (
+                      <input
+                        className="svc-input inline"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={editForm.average_minutes}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            average_minutes: e.target.value,
+                          })
+                        }
+                      />
+                    ) : (
+                      s.average_minutes
                     )}
                   </td>
                   <td className="svc-actions">

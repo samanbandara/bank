@@ -19,6 +19,7 @@ const CustomerConfirm = () => {
   const counter = fromState.counter ?? fallback?.counter;
   const date = fromState.date ?? fallback?.date;
   const services = fromState.services ?? fallback?.services ?? [];
+  const eta = fromState.eta_time ?? fallback?.eta_time;
 
   if (!token || !counter) {
     return (
@@ -74,6 +75,11 @@ const CustomerConfirm = () => {
           <div>
             <strong>Date:</strong> {date}
           </div>
+          {eta && (
+            <div>
+              <strong>Arrival time:</strong> {eta}
+            </div>
+          )}
           <div>
             <strong>Services:</strong> {services.join(", ")}
           </div>

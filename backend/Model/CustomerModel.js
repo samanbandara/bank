@@ -8,6 +8,8 @@ const CustomerSchema = new Schema(
     services: { type: [String], default: [] }, // service IDs
     counterid: { type: String, required: true },
     token: { type: String, required: true },
+    access_type: { type: String, default: "web" }, // "web" or "call"
+    arrival_time: { type: String }, // ETA time HH:MM
   },
   { timestamps: true }
 );

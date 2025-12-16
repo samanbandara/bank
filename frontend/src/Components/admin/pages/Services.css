@@ -140,6 +140,9 @@
   border-collapse: collapse;
   min-width: 540px; /* keep columns readable; allow horizontal scroll on small screens */
 }
+.svc-table--balanced th {
+  white-space: nowrap;
+}
 .svc-table th,
 .svc-table td {
   padding: 10px 12px;

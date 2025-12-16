@@ -3,16 +3,17 @@ const Schema = mongoose.Schema;
 const CounterSchema = new Schema({
     counterid: {
         type: String,
-        required: true
+        required: true,
     },
     countername: {
         type: String,
-        required: true
+        required: true,
     },
     counterservices: {
         type: [String],
-        required: true
-    }
+        required: true,
+    },
+    lastAssignedAt: { type: Date }, // fairness tie-breaker
 });
 
 module.exports = mongoose.model(

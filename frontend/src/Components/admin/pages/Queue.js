@@ -282,9 +282,25 @@ const Queue = () => {
                   <div>{r.date}</div>
                 </div>
                 <div>
+                  <div className="queue-label">Arrival Time</div>
+                  <div>{r.arrival_time || "--"}</div>
+                </div>
+                <div>
                   <div className="queue-label">Customer</div>
                   <div>{r.userid}</div>
                 </div>
+                <div>
+                  <div className="queue-label">Booking Type</div>
+                  <div className="queue-chip-pill">
+                    {r.access_type || "web"}
+                  </div>
+                </div>
+                {r.arrival_time && (
+                  <div>
+                    <div className="queue-label">ETA</div>
+                    <div className="queue-chip">{r.arrival_time}</div>
+                  </div>
+                )}
                 <div className="queue-counter-col">
                   <div className="queue-label">Counter</div>
                   {editingId === r._id ? (

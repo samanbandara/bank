@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import API from "../../api";
 import "./customerDate.css";
@@ -32,6 +32,9 @@ const CustomerDate = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const services = (location.state && location.state.services) || [];
+  const [openDays, setOpenDays] = useState(() => Array(7).fill(true));
+  const [scheduleError, setScheduleError] = useState("");
+  const [scheduleDays, setScheduleDays] = useState([]);
 
   const today = useMemo(() => new Date(), []);
   const todayMid = useMemo(
@@ -42,6 +45,35 @@ const CustomerDate = () => {
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth()); // 0-11
   const [selected, setSelected] = useState(null); // Date
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await API.get("/bank-schedule");
+        const days = res?.data?.schedule?.days || [];
+        const next = Array(7).fill(true);
+        days.forEach((d) => {
+          const idx = Number(d.dayIndex);
+          if (Number.isInteger(idx) && idx >= 0 && idx < 7) {
+            next[idx] = d.open !== undefined ? Boolean(d.open) : true;
+          }
+        });
+        if (!cancelled) {
+          setOpenDays(next);
+          setScheduleDays(days);
+        }
+      } catch (err) {
+        if (!cancelled)
+          setScheduleError(
+            err?.response?.data?.message || "Failed to load bank schedule"
+          );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const goPrevMonth = () => {
     const curKey = today.getFullYear() * 12 + today.getMonth();
@@ -74,10 +106,22 @@ const CustomerDate = () => {
 
   const isDisabled = (y, m, d) => {
     const dt = new Date(y, m, d);
-    const notFuture = dt <= todayMid; // today and past disabled
-    const day = dt.getDay();
-    const isWeekend = day === 0 || day === 6; // Sun or Sat
-    return notFuture || isWeekend;
+    const isPast = dt < todayMid; // allow today, block only past
+    const bankDayIndex = (dt.getDay() + 6) % 7; // Mon=0 ... Sun=6
+    const closed = openDays[bankDayIndex] === false;
+
+    // If schedule has closeTime and date is today, block when now > closeTime (local)
+    const isToday =
+      y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
+    let afterClose = false;
+    const match = scheduleDays.find((x) => Number(x.dayIndex) === bankDayIndex);
+    if (match && match.closeTime && isToday) {
+      const [hh, mm] = String(match.closeTime).split(":").map((v) => parseInt(v, 10) || 0);
+      const close = new Date(y, m, d, hh, mm, 0, 0);
+      if (new Date() > close) afterClose = true;
+    }
+
+    return isPast || closed || afterClose;
   };
 
   const pick = (y, m, d) => {
@@ -108,6 +152,7 @@ const CustomerDate = () => {
             counter: data.counter,
             date: dateStr,
             services,
+            eta_time: data.eta_time,
           };
           sessionStorage.setItem(`token:${id}`, JSON.stringify(payload));
         } catch (_) {}
@@ -117,6 +162,7 @@ const CustomerDate = () => {
             counter: data.counter,
             date: dateStr,
             services,
+            eta_time: data.eta_time,
           },
         });
       } else {
@@ -176,9 +222,7 @@ const CustomerDate = () => {
     <div className="date-page">
       <div className="date-card">
         <h1 className="date-title">Choose Date</h1>
-        <p className="date-subtitle">
-          Select any future date (today is disabled).
-        </p>
+        <p className="date-subtitle">Select any date from today onward (closed days are disabled).</p>
 
         <div className="date-nav">
           <button
@@ -199,7 +243,7 @@ const CustomerDate = () => {
         <div className="date-week">{weekRow}</div>
         <div className="date-grid">{renderGrid()}</div>
 
-        {error && (
+        {(error || scheduleError) && (
           <div
             style={{
               marginTop: 10,
@@ -211,7 +255,7 @@ const CustomerDate = () => {
               fontSize: 13,
             }}
           >
-            {error}
+            {error || scheduleError}
           </div>
         )}
 
